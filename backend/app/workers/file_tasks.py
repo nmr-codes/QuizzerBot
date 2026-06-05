@@ -43,6 +43,16 @@ def process_upload(upload_id: str, storage_path: str, filename: str):
         except Exception:
             pass
 
+        # enqueue AI generation tasks
+        try:
+            # import here to avoid circular imports
+            from app.workers.ai_tasks import generate_summary, generate_quiz
+
+            generate_summary.delay(str(upload_id))
+            generate_quiz.delay(str(upload_id))
+        except Exception:
+            pass
+
         return {"status": "ok", "chars": len(text or "")}
     except Exception as exc:
         return {"status": "error", "error": str(exc), "time": datetime.utcnow().isoformat()}
